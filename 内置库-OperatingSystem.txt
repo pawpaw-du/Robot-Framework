@@ -1,0 +1,88 @@
+*** Settings ***
+Documentation     OperatingSystem：操作系统有关的关键字：环境变量、文件、文件夹、文件路径
+Library           OperatingSystem
+
+*** Test Cases ***
+OS(OperatingSystem)-设置Testlink的URL和Key
+    ${path}    get environment variable    PATH
+    ${java}    get environment variable    JAVA_HOME
+    ${jenkins}    get environment variable    JENKINS_HOME
+    Set Environment Variable    TESTLINK_API_PYTHON_SERVER_URL    http://192.168.1.19:8080/testlink/lib/api/xmlrpc/v1/xmlrpc.php
+    Set Environment Variable    TESTLINK_API_PYTHON_DEVKEY    565bbb8103b0b1be758ac395295a42cd
+    Environment Variable Should Be Set    TESTLINK_API_PYTHON_SERVER_URL
+    ${env}    Get Environment Variables
+    Append To Environment Variable    NAME    first
+    should be equal    %{NAME}    first
+    ${env2}    Get Environment Variables
+
+OS(OperatingSystem)-RUN
+    [Documentation]    log environment variables打印环境变量
+    ${output}    run    dir -h
+    ${rc}    runand return rc    dir -h
+    ${rcandoutput}    run and return rc and output    dir -h
+    ${path}    get environment variable    PATH
+    ${JENKINS_HOME}    get environment variable    JENKINS_HOME
+    Set Environment Variable    TEST    ride
+    ${test}    get environment variable    TEST
+    append to environment variable    TEST    robot
+    ${envs}    get environment variables
+    remove environment variable    TEST
+    Log environment variables
+
+OS(OperatingSystem)-File文件
+    comment    当前目录，创建文件file.text    文件内容
+    create file    ${CURDIR}${/}file.txt    中文内容
+    ${file}    get file    ${CURDIR}${/}file.txt    #获取文件
+    comment    获取文件大小
+    ${file-size}    get file size    ${CURDIR}${/}file.txt    #获取文件大小
+    comment    追加文件内容
+    append to file    ${CURDIR}${/}file.txt    \n自动化测试\n测试指南
+    comment    获取修改时间
+    get modified time    ${CURDIR}${/}file.txt    #获取文件修改时间
+    comment    grep搜索关键字的行
+    ${grep}    grep file    ${CURDIR}${/}file.txt    测试
+    comment    创建一个空文件，修改文件时间戳
+    touch    ${CURDIR}${/}touch.txt
+    comment    删除多个files文件，删除单个文件removefile
+    remove files    ${CURDIR}${/}touch.txt    ${CURDIR}${/}file.txt
+
+OS(OperatingSystem)-Directory目录
+    comment    当前目录新建-目录test
+    create directory    ${CURDIR}${/}目录test
+    comment    生成子目录
+    create directory    ${CURDIR}${/}目录test${/}subdir
+    comment    复制
+    copy directory    ${CURDIR}${/}目录test    ${CURDIR}${/}目录test2
+    comment    移动
+    move directory    ${CURDIR}${/}目录test2    ${CURDIR}${/}目录test3
+    ${list}    list directory    ${CURDIR}
+    ${countdir}    count directories in directory    ${CURDIR}
+    #清空再删除
+    comment    删除目录
+    Remove Directory    ${CURDIR}${/}目录test3    ${CURDIR}${/}目录test${/}subdir
+    get modified time    ${CURDIR}${/}目录test
+    empty directory    ${CURDIR}${/}目录test    #清空再删除
+    remove directory    ${CURDIR}${/}目录test    ${CURDIR}${/}目录test${/}subdir
+
+OS(OperatingSystem)-path路径
+    [Documentation]    join paths实在basepath的基础上，和后面的每一个分别拼装
+    ...
+    ...    Normalize path是将路径正常化，真实路径
+    ...
+    ...    split path将路径拆分，从右起向左找到第一个路径分隔符，然后拆分开
+    ...
+    ...    split \ Extension是以扩展名来进行拆分
+    ...
+    ...    get/set modified time 是用来获取或设置文档最新修改时间的
+    ...    get可以获取文件或目录的最新修改时间
+    ...    set只能设置文件的最新修改时间
+    ...    ${CURDIR}当前目录，文件夹
+    comment    路径拼接    base基础路径
+    ${path}    join path    ${CURDIR}    TEST
+    ${paths}    join paths    ${CURDIR}    TEST    123
+    ${normalpath}    normalize path    ${CURDIR}
+    ${split}    splitpath    ${CURDIR}
+    ${split}    split extension    ${CURDIR}${/}test.txt
+    ${time}    get modified time    ${CURDIR}
+    set modified time    ${CURDIR}${/}test.txt    NOW-1day
+    ${time}    get modified time    ${CURDIR}${/}test.txt
